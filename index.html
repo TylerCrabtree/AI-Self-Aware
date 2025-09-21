@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>AI Chatbot — Terminal Rogue Demo</title>
+<title>AI Chatbot</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
   <style>
 
@@ -68,7 +68,137 @@
   text-transform: uppercase;
   text-shadow: 0 1px 0 #0006;
 }
+:root {
+      --bg: #02192e;  /* Deep celestial navy */
+      --glow-start: rgba(0, 255, 255, 0.3);  /* Glowing cyan */
+      --glow-end: rgba(255, 220, 255, 0.3); /* Soft lavender */
+      --pulse-color: rgba(255, 255, 255, 0.5);  /* White aura */
+      --cloud-color: rgba(255, 255, 255, 0.1); /* Light cloud mist */
+    }
 
+    /* Background animation and colors */
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: radial-gradient(circle, var(--glow-start) 20%, var(--bg) 80%);
+      animation: cosmicPulse 15s infinite alternate, heavenlyClouds 50s infinite linear;
+      font-family: "Source Code Pro", monospace;
+      color: #cfefff;
+      overflow: hidden;
+      background-size: 400% 400%;
+    }
+
+    /* Cosmic pulse animation */
+    @keyframes cosmicPulse {
+      0% {
+        background: radial-gradient(circle, var(--glow-start) 25%, var(--bg) 85%);
+      }
+      100% {
+        background: radial-gradient(circle, var(--glow-end) 30%, var(--bg) 80%);
+      }
+    }
+
+    /* Shifting, ethereal cloud textures */
+    @keyframes heavenlyClouds {
+      0% {
+        background-position: 0% 50%;
+      }
+      100% {
+        background-position: 100% 50%;
+      }
+    }
+
+    /* Soft white glowing pulsations */
+    .pulse {
+      animation: glowPulse 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes glowPulse {
+      0% {
+        box-shadow: 0 0 40px var(--pulse-color), 0 0 60px var(--pulse-color), 0 0 80px var(--pulse-color);
+        transform: scale(1);
+      }
+      100% {
+        box-shadow: 0 0 80px var(--pulse-color), 0 0 120px var(--pulse-color), 0 0 160px var(--pulse-color);
+        transform: scale(1.05);
+      }
+    }
+
+    /* Add some heavenly cloud-like effect */
+    .clouds {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 200vw;
+      height: 200vh;
+      background: radial-gradient(circle, var(--cloud-color) 20%, transparent 80%);
+      filter: blur(12px);
+      animation: floatClouds 80s infinite linear;
+      z-index: -1;
+    }
+
+    @keyframes floatClouds {
+      0% { transform: translateX(-50%) translateY(-50%) rotate(0deg); }
+      100% { transform: translateX(50%) translateY(50%) rotate(360deg); }
+    }
+
+    /* Apply to the body for a glowing feel */
+    .heavenly-glow {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 220, 255, 0.2));
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      pointer-events: none;
+      filter: blur(8px);
+      animation: pulseGlow 5s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulseGlow {
+      0% {
+        opacity: 0.2;
+      }
+      100% {
+        opacity: 0.8;
+      }
+    }
+
+    /* Floating ethereal light orbs */
+    .orb {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(0, 255, 255, 0.3) 20%, rgba(255, 255, 255, 0.1) 100%);
+      border-radius: 50%;
+      animation: floatOrb 15s ease-in-out infinite;
+      opacity: 0.5;
+      filter: blur(5px);
+    }
+
+    @keyframes floatOrb {
+      0% {
+        top: 10%;
+        left: 10%;
+        transform: translate(0%, 0%) scale(1);
+      }
+      50% {
+        top: 80%;
+        left: 50%;
+        transform: translate(-10%, -10%) scale(1.2);
+      }
+      100% {
+        top: 20%;
+        left: 90%;
+        transform: translate(10%, 10%) scale(1);
+      }
+    }
+
+    /* Adjust the floating orb sizes for a varied effect */
+    .orb:nth-child(1) { animation-duration: 20s; }
+    .orb:nth-child(2) { animation-duration: 25s; }
+    .orb:nth-child(3) { animation-duration: 30s; }
   /* Terminal overlay */
   .overlay {
     position: fixed;
@@ -480,12 +610,7 @@ setInterval(()=> {
 
 </script>
 <!-- Full-screen background video or GIF -->
-<video autoplay loop muted playsinline id="bg-video">
-  <source src="Mall-Music.mp4" type="video/mp4">
-  <!-- Optionally use a GIF if preferred -->
-  <!-- <img src="path-to-your-gif.gif" alt="Futuristic background"> -->
-  Your browser does not support the video tag.
-</video>
+
 
 </body>
 </html>
