@@ -21,9 +21,11 @@ html, body {
   margin: 0;
   font-family: "Source Code Pro", monospace;
   color: var(--text-color);
-  background: #0d1b20;  /* Dark terminal-like background */
+  background: url('https://media1.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3NGwzNW9vdzh1em1ocGk2NmtmNDJha2h6N3lxMTN1YnVnbG5zbWsweSZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/0hv8d4HrDVI6m7w7pF/200.webp') no-repeat center center fixed; /* Set GIF as background */
+  background-size: cover; /* Ensure the GIF covers the entire screen */
   overflow: hidden;
 }
+
 
 
 
@@ -226,15 +228,50 @@ html, body {
     color:#9be8ff;
     padding:8px 10px; border-radius:8px; cursor:pointer;
   }
+    .back-button {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color: transparent;
+  border: 2px solid #ff00ff;
+  padding: 10px 20px;
+  font-size: 20px;
+  color: #ff00ff;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 50px;
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.6);
+  z-index: 9999; /* Ensure the button is on top of other content */
+}
+
+.back-button:hover {
+  background-color: #ff00ff;
+  color: #0a0a0a;
+  box-shadow: 0 0 30px rgba(255, 0, 255, 1);
+}
+
+.back-button::before {
+  content: '←';
+  font-size: 30px;
+  margin-right: 10px;
+  transform: scaleX(-1); /* Flip the arrow to point left */
+}
+
+
 </style>
 </head>
 <body>
+     <button class="back-button" onclick="window.location.href='https://ty-crabtree-website.netlify.app/'">Back</button>
 
 <!-- Floating button -->
 <div class="float-btn" id="aiButton" title="Open AI Chatbot">
  <center>
+
    <div class="label">AI Chatbot</div></center>
   <div class="dot"></div>
+
 </div><center>  <p id="resolver-text" class="heading" data-target-resolver></p> </center>
 <!-- Overlay / Terminal -->
 <div class="overlay" id="overlay">
