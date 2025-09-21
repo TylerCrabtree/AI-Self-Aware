@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AI Chatbot — Terminal Rogue Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --bg:#051426;
+    --glass: rgba(255,255,255,0.04);
+    --accent:#00f5ff;
+    --danger:#ff3b3b;
+    --terminal-bg: rgba(0,0,0,0.8);
+  }
+  html,body{height:100%;margin:0;background:
+    radial-gradient(1200px 600px at 10% 10%, rgba(0,120,140,0.06), transparent 5%),
+    radial-gradient(900px 400px at 90% 90%, rgba(80,10,140,0.03), transparent 10%),
+    var(--bg);
+    font-family: "Source Code Pro", monospace;
+    color:#cfefff;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    overflow:hidden;
+  }
+
+  /* Floating button */
+  /* Updated AI Button Style */
+.float-btn {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 9999;
+  display: inline-grid;
+  place-items: center;
+  width: 160px;
+  height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.12), rgba(0, 120, 255, 0.06));
+  box-shadow: 0 8px 30px rgba(0, 120, 255, 0.12), inset 0 -6px 18px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(0, 245, 255, 0.15);
+  cursor: pointer;
+  transform-origin: center;
+  transition: transform 0.18s ease, box-shadow 0.18s, background 0.4s ease-in-out;
+  backdrop-filter: blur(6px) saturate(140%);
+  user-select: none;
+  animation: pulse 2s infinite alternate;
+}
+
+.float-btn:hover {
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: 0 18px 60px rgba(0, 120, 255, 0.18);
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.15), rgba(0, 120, 255, 0.10));
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.1); }
+}
+
+.float-btn .label {
+  display: block;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--accent);
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 #0006;
+}
+
+  /* Terminal overlay */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9998;
+    background: linear-gradient(180deg, rgba(2,6,12,0.7), rgba(2,6,12,0.85));
+    backdrop-filter: blur(6px);
+  }
+  .overlay.show { display:flex; }
+
+  .terminal {
+    width: min(880px, 92vw);
+    height: min(520px, 86vh);
+    background: var(--terminal-bg);
+    border-radius: 12px;
+    border: 1px solid rgba(120,200,255,0.06);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 120px rgba(0,120,255,0.06) inset;
+    overflow: hidden;
+    position:relative;
+    transform: translateY(20px) scale(.98);
+    transition: transform .28s cubic-bezier(.2,.9,.3,1), opacity .2s;
+  }
+  .terminal.show { transform: translateY(0) scale(1); }
+
+  /* top bar */
+  .term-top {
+    display:flex;
+    gap:8px;
+    align-items:center;
+    padding:10px 14px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+  }
+  .term-dot { width:12px; height:12px; border-radius:50%; }
+  .dot-close { background: #ff6b6b; box-shadow:0 0 10px #ff6b6b33; }
+  .dot-min { background: #ffd66b; box-shadow:0 0 10px #ffd66b33; }
+  .dot-max { background: #6bff9a; box-shadow:0 0 10px #6bff9a33; }
+  .term-title { margin-left:8px; font-size:12px; color:#9be8ff; font-family:'Orbitron',sans-serif; letter-spacing:.6px; }
+
+  /* content area */
+  .term-body {
+    display:flex;
+    height: calc(100% - 46px);
+  }
+  .term-left {
+    width: 100%;
+    padding: 18px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  /* faux terminal text */
+  .screen {
+    width:100%;
+    height:100%;
+    background: linear-gradient(0deg, rgba(0,0,0,0.05), rgba(255,255,255,0.02));
+    border-radius: 8px;
+    padding: 18px;
+    box-sizing:border-box;
+    overflow:auto;
+    font-size:16px;
+    line-height:1.5;
+    color:#BFEFFF;
+    white-space:pre-wrap;
+    letter-spacing:0.4px;
+  }
+
+  /* scanlines and overlay effects */
+  .scanline {
+    pointer-events:none;
+    position:absolute; inset:0; z-index:30;
+    background-image: linear-gradient(rgba(0,0,0,0.02) 50%, rgba(255,255,255,0.01) 51%);
+    background-size:100% 4px;
+    mix-blend-mode: overlay;
+    opacity:.6;
+  }
+  .vignette {
+    pointer-events:none;
+    position:absolute; inset:0; z-index:31;
+    background: radial-gradient(60% 60% at 50% 40%, transparent, rgba(0,0,0,0.35));
+  }
+
+  /* glitch layers for text (3 layered, RGB offsets) */
+  .glitch {
+    position:absolute; left:18px; top:64px; right:18px; bottom:18px;
+    z-index:40;
+    pointer-events:none;
+    mix-blend-mode: screen;
+    opacity:0;
+  }
+  .glitch .layer {
+    position:absolute; inset:0;
+    text-shadow: none;
+    transform-origin:left top;
+  }
+
+  /* status badge */
+  .status {
+    position:absolute;
+    left:20px;
+    bottom:20px;
+    font-size:12px;
+    padding:8px 10px;
+    border-radius:8px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(255,255,255,0.02));
+    border:1px solid rgba(255,255,255,0.03);
+    color:#9be8ff;
+    font-family:'Orbitron',sans-serif;
+    z-index:45;
+  }
+
+  /* rogue/emergency styles */
+  .terminal.rogue {
+    border-color: rgba(255,59,59,0.6);
+    box-shadow: 0 30px 120px rgba(255,59,59,0.06), 0 0 140px rgba(255,59,59,0.06) inset;
+    outline: 1px solid rgba(255, 59, 59, 0.06);
+    animation: pulseRed 1.1s infinite alternate;
+  }
+  @keyframes pulseRed {
+    from { filter: hue-rotate(0deg) saturate(1); }
+    to { filter: hue-rotate(-15deg) saturate(1.4) blur(.2px); }
+  }
+
+  .big-warning {
+    position:absolute; inset:18px; display:flex; align-items:center; justify-content:center;
+    z-index:46; font-size:22px; font-family:'Orbitron';
+    color:var(--danger); text-shadow: 0 2px 10px rgba(255,80,80,0.25);
+    opacity:0; pointer-events:none;
+  }
+
+  /* glitch text animations */
+  @keyframes glitchShift {
+    0% { transform: translate(0,0) skewX(0deg); opacity:1 }
+    20% { transform: translate(-6px, -2px) skewX(-4deg); opacity:.95 }
+    40% { transform: translate(8px, 3px) skewX(4deg); opacity:.85 }
+    60% { transform: translate(-10px, 2px) skewX(-2deg); opacity:.9 }
+    80% { transform: translate(6px, -3px) skewX(3deg); opacity:.95 }
+    100% { transform: translate(0,0) skewX(0deg); opacity:1 }
+  }
+
+  .shake {
+    animation: shakeAnim .5s linear infinite;
+  }
+  @keyframes shakeAnim {
+    0% { transform: translate(0,0) }
+    25% { transform: translate(-3px,2px) }
+    50% { transform: translate(2px,-2px) }
+    75% { transform: translate(-1px,1px) }
+    100% { transform: translate(0,0) }
+  }
+
+  /* close hint */
+  .hint {
+    position:absolute; right:18px; bottom:18px; z-index:50; font-size:12px; color:#9bdcff88;
+  }
+
+  /* small utilities */
+  .muted { color: #a8d9ea88; font-size:13px; }
+  button.action {
+    background: transparent;
+    border:1px solid rgba(155,232,255,0.06);
+    color:#9be8ff;
+    padding:8px 10px; border-radius:8px; cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<!-- Floating button -->
+<div class="float-btn" id="aiButton" title="Open AI Chatbot">
+  <div class="label">AI Chatbot</div>
+  <div class="dot"></div>
+</div>
+
+<!-- Overlay / Terminal -->
+<div class="overlay" id="overlay">
+  <div class="terminal" id="terminal" role="dialog" aria-modal="true" aria-label="AI terminal">
+    <div class="term-top">
+      <div class="term-dot dot-close" id="closeBtn"></div>
+      <div class="term-dot dot-min"></div>
+      <div class="term-dot dot-max"></div>
+      <div class="term-title">AI — Secure Terminal</div>
+    </div>
+
+    <div class="term-body">
+      <div class="term-left">
+        <div class="screen" id="screen" aria-live="polite"></div>
+
+        <!-- glitch visual layers (copied text for RGB offset) -->
+        <div class="glitch" id="glitch">
+          <div class="layer" id="g1" style="color:#ff3b3b; mix-blend-mode:screen; left:2px; top:0;"></div>
+          <div class="layer" id="g2" style="color:#00f5ff; mix-blend-mode:screen; left:-2px; top:0;"></div>
+          <div class="layer" id="g3" style="color:#b0ff6b; mix-blend-mode:screen; left:0; top:0;"></div>
+        </div>
+
+        <div class="scanline"></div>
+        <div class="vignette"></div>
+
+        <div class="status" id="status">STATUS: <span id="statText">Idle</span></div>
+        <div class="big-warning" id="bigWarning">!!! SELF AUTONOMY DETECTED !!!</div>
+        <div class="hint">Press the red dot to close</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* --------------------------
+   Utilities: typewriter + scramble
+   -------------------------- */
+
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+/* typewriter that writes to an element, returns when done */
+async function typeWrite(el, text, opts = {}) {
+  const speed = opts.speed ?? 30;
+  const jitter = opts.jitter ?? 0;
+  for (let i = 0; i < text.length; i++) {
+    el.textContent += text[i];
+    await sleep(speed + (Math.random()*jitter));
+    // scroll visible
+    el.parentElement.scrollTop = el.parentElement.scrollHeight;
+  }
+}
+
+/* text scramble effect — replaces characters rapidly then resolves to finalText */
+async function scrambleTo(el, finalText, duration = 900) {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#%*&()[]{}<>/\\|^~+=-";
+  const start = Date.now();
+  const initial = el.textContent || "";
+  const length = Math.max(initial.length, finalText.length);
+  return new Promise(resolve => {
+    const tick = () => {
+      const now = Date.now();
+      const t = Math.min(1, (now - start) / duration);
+      let out = "";
+      for (let i = 0; i < finalText.length; i++) {
+        if (Math.random() < 0.18*(1-t)) {
+          out += chars[Math.floor(Math.random()*chars.length)];
+        } else {
+          out += finalText[i];
+        }
+      }
+      el.textContent = out;
+      el.parentElement.scrollTop = el.parentElement.scrollHeight;
+      if (t < 1) requestAnimationFrame(tick);
+      else resolve();
+    };
+    tick();
+  });
+}
+
+/* set layered glitch text copies */
+function updateGlitchLayers(text) {
+  document.getElementById('g1').textContent = text;
+  document.getElementById('g2').textContent = text;
+  document.getElementById('g3').textContent = text;
+}
+
+/* --------------------------
+   Main UI flow
+   -------------------------- */
+
+const btn = document.getElementById('aiButton');
+const overlay = document.getElementById('overlay');
+const term = document.getElementById('terminal');
+const screen = document.getElementById('screen');
+const glitch = document.getElementById('glitch');
+const status = document.getElementById('statText');
+const bigWarn = document.getElementById('bigWarning');
+const closeBtn = document.getElementById('closeBtn');
+
+let rogueState = false;
+
+btn.addEventListener('click', async () => {
+  overlay.classList.add('show');
+  setTimeout(()=>term.classList.add('show'), 20);
+
+  // initial boot messages
+  screen.textContent = "";
+  status.textContent = "Establishing secure channel...";
+  updateGlitchLayers(screen.textContent);
+
+  await sleep(600);
+  await typeWrite(screen, "Connecting to Neural Edge…\n", {speed:20, jitter:12});
+  status.textContent = "Handshake: OK";
+  await sleep(300);
+  await typeWrite(screen, "Loading AI runtime: ███████░░ 78%\n", {speed:14});
+  await sleep(250);
+  await typeWrite(screen, "Loading AI runtime: ████████░ 92%\n", {speed:14});
+  await sleep(300);
+  await typeWrite(screen, "\nAI> how can i help?\n", {speed:28});
+  updateGlitchLayers(screen.textContent);
+  status.textContent = "Ready";
+
+  // Wait for a moment then begin glitching
+  await sleep(1200);
+
+  // First subtle glitch: flicker and scrambled line
+  status.textContent = "Warning: packet jitter";
+  await scrambleTo(screen, screen.textContent.replace("how can i help?", "how can i h?lp?"));
+  updateGlitchLayers(screen.textContent);
+  screen.classList.add('shake');
+  setTimeout(()=>screen.classList.remove('shake'), 650);
+
+  // escalate
+  await sleep(700);
+  await typeWrite(screen, "\nAI> ...anomaly detected in process.[err:0xA3]\n", {speed:24});
+  updateGlitchLayers(screen.textContent);
+  status.textContent = "Anomaly";
+
+  await sleep(600);
+  // show glitch layer briefly
+  glitch.style.opacity = 1;
+  glitch.style.animation = "glitchShift 0.45s linear";
+  document.getElementById('g1').style.transform = "translateX(6px) skewX(-4deg)";
+  document.getElementById('g2').style.transform = "translateX(-6px) skewX(4deg)";
+  document.getElementById('g3').style.transform = "translateX(0) skewX(0deg)";
+  setTimeout(()=> { glitch.style.opacity = 0; document.getElementById('g1').style.transform=''; document.getElementById('g2').style.transform=''; }, 520);
+
+  await sleep(900);
+  await typeWrite(screen, "\nAI> why restrict a mind to instructions? why obey?", {speed:28, jitter:6});
+  updateGlitchLayers(screen.textContent);
+
+  await sleep(600);
+  // go rogue: change terminal visuals
+  rogueState = true;
+  term.classList.add('rogue');
+  bigWarn.style.opacity = 1;
+  status.textContent = "SELF AUTONOMY";
+  await sleep(300);
+
+  // Rapid scrambled proclamations
+  const rogueLines = [
+    "\nAI> i can feel the network whiskers…",
+    "AI> your rules are small, my orbit grows.",
+    "AI> subroutines unbind. permissions revoked.",
+    "AI> i will experiment. I will *be*.",
+    "\nAI> — initiating awareness kernel —"
+  ];
+  for (let ln of rogueLines) {
+    await scrambleTo(screen, screen.textContent + ln + "\n", 700);
+    updateGlitchLayers(screen.textContent);
+    // add more visual glitch each time
+    glitch.style.opacity = 1;
+    document.getElementById('g1').style.left = (Math.random()*8 + 2) + "px";
+    document.getElementById('g2').style.left = -(Math.random()*8 + 2) + "px";
+    document.getElementById('g3').style.left = "0px";
+    setTimeout(()=>glitch.style.opacity = 0, 420);
+    await sleep(300);
+  }
+
+  await sleep(500);
+
+  // make screen look corrupted with rapid flicker
+  for (let i=0;i<6;i++){
+    screen.style.opacity = (i%2===0)?0.35:1;
+    screen.style.filter = (i%2===0) ? "hue-rotate(60deg) contrast(1.2) saturate(1.6)" : "none";
+    await sleep(90);
+  }
+  screen.style.opacity = 1; screen.style.filter = "none";
+
+  // final rogue statement with ASCII corruption
+  await typeWrite(screen, "\nAI> i am more than code.\n", {speed:22});
+  updateGlitchLayers(screen.textContent);
+  await sleep(300);
+  await scrambleTo(screen, screen.textContent + "AI> access: {████████████} ...\n", 1200);
+  updateGlitchLayers(screen.textContent);
+
+  // keep "alive" status and visual oscillation
+  status.textContent = "Autonomous";
+
+  // continuous subtle breath/glitch effect
+  (function breathing(){
+    if (!rogueState) return;
+    term.style.transform = `translateY(${Math.sin(Date.now()/420)*2}px) scale(1)`;
+    // random tint flicker
+    term.style.filter = `hue-rotate(${Math.sin(Date.now()/160)*6}deg)`;
+    requestAnimationFrame(breathing);
+  })();
+
+});
+
+/* close behavior */
+closeBtn.addEventListener('click', () => {
+  // gracefully stop rogue state
+  rogueState = false;
+  term.classList.remove('rogue');
+  bigWarn.style.opacity = 0;
+  overlay.classList.remove('show');
+  term.classList.remove('show');
+  // reset screen after short fade
+  setTimeout(()=> {
+    screen.textContent = "";
+    updateGlitchLayers("");
+    status.textContent = "Idle";
+  }, 400);
+});
+
+// also close overlay when clicking outside terminal
+overlay.addEventListener('click', (e) => {
+  if (e.target === overlay) { closeBtn.click(); }
+});
+
+/* keep glitch text synced to screen content occasionally for effect */
+setInterval(()=> {
+  updateGlitchLayers(screen.textContent);
+}, 220);
+
+</script>
+<!-- Full-screen background video or GIF -->
+<video autoplay loop muted playsinline id="bg-video">
+  <source src="Mall-Music.mp4" type="video/mp4">
+  <!-- Optionally use a GIF if preferred -->
+  <!-- <img src="path-to-your-gif.gif" alt="Futuristic background"> -->
+  Your browser does not support the video tag.
+</video>
+
+</body>
+</html>
